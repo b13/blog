@@ -134,6 +134,10 @@ CREATE TABLE tx_blog_domain_model_author (
   posts text,
   details_page int(11) DEFAULT '0' NOT NULL,
 
+  sys_language_uid int(11) DEFAULT '0' NOT NULL,
+  l18n_parent int(11) DEFAULT '0' NOT NULL,
+  l18n_diffsource mediumblob NOT NULL,
+
   PRIMARY KEY (uid),
   KEY parent (pid)
 );
