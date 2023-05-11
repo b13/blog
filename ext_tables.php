@@ -12,7 +12,6 @@ if (!defined('TYPO3')) {
 }
 
 call_user_func(function () {
-
     // Add new page type:
     $GLOBALS['PAGES_TYPES'][\T3G\AgencyPack\Blog\Constants::DOKTYPE_BLOG_POST] = [
         'type' => 'web',
@@ -28,6 +27,9 @@ call_user_func(function () {
         'actions-approve' => 'EXT:blog/Resources/Public/Icons/actions-approve.svg',
         'actions-decline' => 'EXT:blog/Resources/Public/Icons/actions-decline.svg',
         'module-blog' => 'EXT:blog/Resources/Public/Icons/module-blog.svg',
+        'module-blog-posts' => 'EXT:blog/Resources/Public/Icons/module-blog-posts.svg',
+        'module-blog-comments' => 'EXT:blog/Resources/Public/Icons/module-blog-comments.svg',
+        'module-blog-setup' => 'EXT:blog/Resources/Public/Icons/module-blog-setup.svg',
         'plugin-blog-archive' => 'EXT:blog/Resources/Public/Icons/plugin-blog-archive.svg',
         'plugin-blog-authorposts' => 'EXT:blog/Resources/Public/Icons/plugin-blog-authorposts.svg',
         'plugin-blog-authors' => 'EXT:blog/Resources/Public/Icons/plugin-blog-authors.svg',
@@ -37,7 +39,6 @@ call_user_func(function () {
         'plugin-blog-demandedposts' => 'EXT:blog/Resources/Public/Icons/plugin-blog-demandedposts.svg',
         'plugin-blog-header' => 'EXT:blog/Resources/Public/Icons/plugin-blog-header.svg',
         'plugin-blog-footer' => 'EXT:blog/Resources/Public/Icons/plugin-blog-footer.svg',
-        'plugin-blog-metadata' => 'EXT:blog/Resources/Public/Icons/plugin-blog-metadata.svg',
         'plugin-blog-posts' => 'EXT:blog/Resources/Public/Icons/plugin-blog-posts.svg',
         'plugin-blog-relatedposts' => 'EXT:blog/Resources/Public/Icons/plugin-blog-relatedposts.svg',
         'plugin-blog-sidebar' => 'EXT:blog/Resources/Public/Icons/plugin-blog-sidebar.svg',
@@ -66,9 +67,9 @@ call_user_func(function () {
         options.pageTree.doktypesToShowInNewPageDragArea := addToList(' . \T3G\AgencyPack\Blog\Constants::DOKTYPE_BLOG_POST . ')
     ');
 
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_blog_domain_model_comment');
+    if ((\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Information\Typo3Version::class))->getMajorVersion() < 12) {
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_blog_domain_model_comment');
 
-    if (TYPO3_MODE === 'BE') {
         // Main Blog
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule(
             'blog',

@@ -14,7 +14,7 @@ use T3G\AgencyPack\Blog\Constants;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use /** @noinspection PhpInternalEntityUsedInspection */
-    TYPO3\CMS\Install\Updates\DatabaseUpdatedPrerequisite;
+TYPO3\CMS\Install\Updates\DatabaseUpdatedPrerequisite;
 use TYPO3\CMS\Install\Updates\UpgradeWizardInterface;
 
 /**
@@ -79,7 +79,7 @@ class DatabaseMonthYearUpdate implements UpgradeWizardInterface
                 )
             )
             ->execute();
-        while ($record = $statement->fetch()) {
+        while ($record = $statement->fetchAssociative()) {
             $timestamp = $record['crdate'] ?? time();
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->update('pages')
@@ -130,7 +130,7 @@ class DatabaseMonthYearUpdate implements UpgradeWizardInterface
                 )
             )
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
         return (bool)$elementCount;
     }
 

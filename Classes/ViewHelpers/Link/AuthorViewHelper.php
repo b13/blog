@@ -11,6 +11,7 @@ declare(strict_types = 1);
 namespace T3G\AgencyPack\Blog\ViewHelpers\Link;
 
 use T3G\AgencyPack\Blog\Domain\Model\Author;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
@@ -26,7 +27,7 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
      * Arguments initialization.
      *
      * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
+     * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
      */
     public function initializeArguments(): void
     {
@@ -89,10 +90,11 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
     protected function getUriBuilder(int $pageUid, array $additionalParams, bool $rssFormat): UriBuilder
     {
         /** @var UriBuilder $uriBuilder */
-        $uriBuilder = $this->renderingContext->getControllerContext()->getUriBuilder();
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         $uriBuilder->reset()
             ->setTargetPageUid($pageUid)
             ->setArguments($additionalParams);
+        $uriBuilder->setRequest($this->renderingContext->getRequest());
         if ($rssFormat) {
             $uriBuilder
                 ->setTargetPageType((int)$this->getTypoScriptFrontendController()->tmpl->setup['blog_rss_author.']['typeNum']);

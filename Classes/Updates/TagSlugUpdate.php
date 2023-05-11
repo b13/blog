@@ -84,7 +84,7 @@ class TagSlugUpdate implements UpgradeWizardInterface
                     $queryBuilder->expr()->isNull($this->slugField)
                 )
             )
-            ->execute()->fetchColumn(0);
+            ->execute()->fetchOne();
 
         return (bool)$elementCount;
     }
@@ -115,7 +115,7 @@ class TagSlugUpdate implements UpgradeWizardInterface
         $hasToBeUniqueInPid = in_array('uniqueInPid', $evalInfo, true);
         $slugHelper = GeneralUtility::makeInstance(SlugHelper::class, $this->table, $this->slugField, $fieldConfig);
 
-        while ($record = $statement->fetch()) {
+        while ($record = $statement->fetchAssociative()) {
             $recordId = (int)$record['uid'];
             $pid = (int)$record['pid'];
 

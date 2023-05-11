@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use /** @noinspection PhpInternalEntityUsedInspection */
-    TYPO3\CMS\Install\Updates\DatabaseUpdatedPrerequisite;
+TYPO3\CMS\Install\Updates\DatabaseUpdatedPrerequisite;
 use TYPO3\CMS\Install\Updates\UpgradeWizardInterface;
 
 class AvatarProviderUpdate implements UpgradeWizardInterface
@@ -69,7 +69,7 @@ class AvatarProviderUpdate implements UpgradeWizardInterface
                 $queryBuilder->expr()->eq('avatar_provider', $queryBuilder->createNamedParameter('', \PDO::PARAM_STR))
             )
             ->execute();
-        while ($record = $statement->fetch()) {
+        while ($record = $statement->fetchAssociative()) {
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->update('tx_blog_domain_model_author')
                 ->where(
@@ -102,7 +102,7 @@ class AvatarProviderUpdate implements UpgradeWizardInterface
             ->where(
                 $queryBuilder->expr()->eq('avatar_provider', $queryBuilder->createNamedParameter('', \PDO::PARAM_STR))
             )
-            ->execute()->fetchColumn(0);
+            ->execute()->fetchOne();
         return (bool)$elementCount;
     }
 

@@ -18,8 +18,10 @@ use T3G\AgencyPack\Blog\Service\CacheService;
 use T3G\AgencyPack\Blog\Service\SetupService;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Imaging\IconFactory;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -60,6 +62,18 @@ class BackendController extends ActionController
      * @var CacheService
      */
     protected $blogCacheService;
+    private \TYPO3\CMS\Core\Page\PageRenderer $pageRenderer;
+    protected ModuleTemplateFactory $moduleTemplateFactory;
+
+    public function __construct(
+        \TYPO3\CMS\Core\Imaging\IconFactory $iconFactory,
+        \TYPO3\CMS\Core\Page\PageRenderer $pageRenderer,
+        ModuleTemplateFactory $moduleTemplateFactory
+    ) {
+        $this->iconFactory = $iconFactory;
+        $this->pageRenderer = $pageRenderer;
+        $this->moduleTemplateFactory = $moduleTemplateFactory;
+    }
 
     /**
      * @param SetupService $setupService
@@ -95,11 +109,10 @@ class BackendController extends ActionController
 
     public function initializeAction(): void
     {
-        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
-        $this->iconFactory = $this->moduleTemplate->getIconFactory();
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
         $this->buttonBar = $this->moduleTemplate->getDocHeaderComponent()->getButtonBar();
 
-        $pageRenderer = $this->moduleTemplate->getPageRenderer();
+        $pageRenderer = $this->pageRenderer;
         $pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Tooltip');
         $pageRenderer->addCssFile('EXT:blog/Resources/Public/Css/backend.min.css', 'stylesheet', 'all', '', false);
     }
@@ -107,7 +120,7 @@ class BackendController extends ActionController
     public function initializeSetupWizardAction(): void
     {
         $this->initializeDataTables();
-        $this->moduleTemplate->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Blog/SetupWizard');
+        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Blog/SetupWizard');
     }
 
     public function initializePostsAction(): void
@@ -118,12 +131,12 @@ class BackendController extends ActionController
     public function initializeCommentsAction(): void
     {
         $this->initializeDataTables();
-        $this->moduleTemplate->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Blog/MassUpdate');
+        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Blog/MassUpdate');
     }
 
     protected function initializeDataTables(): void
     {
-        $pageRenderer = $this->moduleTemplate->getPageRenderer();
+        $pageRenderer = $this->pageRenderer;
         $pageRenderer->loadRequireJsModule('TYPO3/CMS/Blog/Datatables');
         $pageRenderer->addCssFile('EXT:blog/Resources/Public/Css/Datatables.min.css', 'stylesheet', 'all', '', false);
     }
@@ -140,9 +153,9 @@ class BackendController extends ActionController
      */
     public function setupWizardAction(): ResponseInterface
     {
-        return $this->htmlResponse($this->render('Backend/SetupWizard.html', [
+        return $this->renderResponse('Backend/SetupWizard.html', [
             'blogSetups' => $this->setupService->determineBlogSetups(),
-        ]));
+        ]);
     }
 
     /**
@@ -158,16 +171,11 @@ class BackendController extends ActionController
         $querySettings = $query->getQuerySettings();
         $querySettings->setIgnoreEnableFields(true);
         $this->postRepository->setDefaultQuerySettings($querySettings);
-
-        $html = $this->render('Backend/Posts.html', [
+        return $this->renderResponse('Backend/Posts.html', [
             'blogSetups' => $this->setupService->determineBlogSetups(),
             'activeBlogSetup' => $blogSetup,
             'posts' => $this->postRepository->findAllByPid($blogSetup),
         ]);
-        $response = $this->responseFactory->createResponse()
-            ->withHeader('Content-Type', 'text/html; charset=utf-8');
-        $response->getBody()->write($html ?? $this->view->render());
-        return $response;
     }
 
     /**
@@ -182,7 +190,7 @@ class BackendController extends ActionController
      */
     public function commentsAction(string $filter = null, int $blogSetup = null): ResponseInterface
     {
-        $html = $this->render('Backend/Comments.html', [
+        return $this->renderResponse('Backend/Comments.html', [
             'activeFilter' => $filter,
             'activeBlogSetup' => $blogSetup,
             'commentCounts' => [
@@ -195,10 +203,6 @@ class BackendController extends ActionController
             'blogSetups' => $this->setupService->determineBlogSetups(),
             'comments' => $this->commentRepository->findAllByFilter($filter, $blogSetup),
         ]);
-        $response = $this->responseFactory->createResponse()
-            ->withHeader('Content-Type', 'text/html; charset=utf-8');
-        $response->getBody()->write($html ?? $this->view->render());
-        return $response;
     }
 
     /**
@@ -213,7 +217,7 @@ class BackendController extends ActionController
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
      */
-    public function updateCommentStatusAction(string $status, string $filter = null, int $blogSetup = null, array $comments = [], int $comment = null): void
+    public function updateCommentStatusAction(string $status, string $filter = null, int $blogSetup = null, array $comments = [], int $comment = null): ResponseInterface
     {
         if ($comment !== null) {
             $comments['__identity'][] = $comment;
@@ -239,7 +243,8 @@ class BackendController extends ActionController
                 $this->blogCacheService->flushCacheByTag('tx_blog_comment_' . $comment->getUid());
             }
         }
-        $this->redirect('comments', null, null, ['filter' => $filter, 'blogSetup' => $blogSetup]);
+        $uri = $this->uriBuilder->reset()->uriFor('comments', ['filter' => $filter, 'blogSetup' => $blogSetup]);
+        return new RedirectResponse($uri);
     }
 
     /**
@@ -248,14 +253,15 @@ class BackendController extends ActionController
      * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
      * @throws \TYPO3\CMS\Extensionmanager\Exception\ExtensionManagerException
      */
-    public function createBlogAction(array $data = null): void
+    public function createBlogAction(array $data = null): ResponseInterface
     {
         if ($this->setupService->createBlogSetup($data)) {
             $this->addFlashMessage('Your blog setup has been created.', 'Congratulation');
         } else {
-            $this->addFlashMessage('Sorry, your blog setup could not be created.', 'An error occurred', FlashMessage::ERROR);
+            $this->addFlashMessage('Sorry, your blog setup could not be created.', 'An error occurred', \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR);
         }
-        $this->redirect('setupWizard');
+        $uri = $this->uriBuilder->reset()->uriFor('setupWizard');
+        return new RedirectResponse($uri);
     }
 
     /**
@@ -277,7 +283,6 @@ class BackendController extends ActionController
         $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName('EXT:blog/Resources/Private/Templates/' . $templateNameAndPath));
         $view->setControllerContext($this->getControllerContext());
         $view->getRequest()->setControllerExtensionName('Blog');
-
         return $view;
     }
 
@@ -295,9 +300,26 @@ class BackendController extends ActionController
         $view = $this->getFluidTemplateObject($templateNameAndPath);
         $view->assign('_template', $templateNameAndPath);
         $view->assign('action', $this->actionMethodName);
+        $view->assign('layout', 'Backend');
         $view->assignMultiple($values);
         $this->moduleTemplate->setContent($view->render());
 
         return $this->moduleTemplate->renderContent();
+    }
+
+    protected function renderResponse(string $templateName, array $values): ResponseInterface
+    {
+        if ((GeneralUtility::makeInstance(Typo3Version::class))->getMajorVersion() < 12) {
+            $html = $this->render($templateName, $values);
+            $response = $this->responseFactory->createResponse()
+                ->withHeader('Content-Type', 'text/html; charset=utf-8');
+            $response->getBody()->write($html ?? $this->view->render());
+            return $response;
+        }
+        $this->moduleTemplate->assignMultiple(array_merge(
+            ['_template' => $templateName, 'action' => $this->actionMethodName, 'layout' => 'Module'],
+            $values
+        ));
+        return $this->moduleTemplate->renderResponse($templateName);
     }
 }

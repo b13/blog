@@ -15,13 +15,12 @@ use T3G\AgencyPack\Blog\Domain\Model\Post;
 use T3G\AgencyPack\Blog\Mail\MailMessage;
 use T3G\AgencyPack\Blog\Notification\CommentAddedNotification;
 use T3G\AgencyPack\Blog\Notification\NotificationInterface;
+use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class AuthorNotificationProcessor implements ProcessorInterface
 {
-
     /**
      * Process the notification
      *
@@ -45,9 +44,13 @@ class AuthorNotificationProcessor implements ProcessorInterface
     {
         $notificationId = $notification->getNotificationId();
 
-        $settings = GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(ConfigurationManagerInterface::class)
-            ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
+        $settings = [];
+        $frontendController = $this->getTypoScriptFrontendController();
+        if ($frontendController instanceof TypoScriptFrontendController) {
+            $settings = $frontendController->tmpl->setup['plugin.']['tx_blog.']['settings.'] ?? [];
+            $typoScriptService = GeneralUtility::makeInstance(TypoScriptService::class);
+            $settings = $typoScriptService->convertTypoScriptArrayToPlainArray($settings);
+        }
 
         /** @var Post $post */
         $post = $notification->getData()['post'];
@@ -63,5 +66,10 @@ class AuthorNotificationProcessor implements ProcessorInterface
                     ->send();
             }
         }
+    }
+
+    protected function getTypoScriptFrontendController(): ?TypoScriptFrontendController
+    {
+        return $GLOBALS['TSFE'];
     }
 }

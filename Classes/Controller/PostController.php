@@ -27,11 +27,11 @@ use T3G\AgencyPack\Blog\Utility\ArchiveUtility;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3Fluid\Fluid\View\ViewInterface;
 
 class PostController extends ActionController
 {
@@ -111,11 +111,10 @@ class PostController extends ActionController
     }
 
     /**
-     * @param ViewInterface $view
+     * @param ViewInterface|\TYPO3\CMS\Extbase\Mvc\View\ViewInterface $view
      */
-    protected function initializeView(ViewInterface $view): void
+    protected function initializeView($view): void
     {
-        parent::initializeView($view);
         if ($this->request->getFormat() === 'rss') {
             $action = '.' . $this->request->getControllerActionName();
             $arguments = [];
@@ -373,30 +372,6 @@ class PostController extends ActionController
      */
     public function footerAction(): ResponseInterface
     {
-        $post = $this->postRepository->findCurrentPost();
-        $this->view->assign('post', $post);
-        if ($post instanceof Post) {
-            $this->blogCacheService->addTagsForPost($post);
-        }
-        return $this->htmlResponse();
-    }
-
-    /**
-     * Metadata action: output meta information of blog post.
-     *
-     * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
-     * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
-     *
-     * @deprecated
-     */
-    public function metadataAction(): ResponseInterface
-    {
-        trigger_error(
-            'Using \T3G\AgencyPack\Blog\Controller\PostController::metadataAction is deprecated. Use headerAction or footerAction instead.',
-            E_USER_DEPRECATED
-        );
-
         $post = $this->postRepository->findCurrentPost();
         $this->view->assign('post', $post);
         if ($post instanceof Post) {

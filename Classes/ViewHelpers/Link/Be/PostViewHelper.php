@@ -10,8 +10,10 @@ declare(strict_types = 1);
 
 namespace T3G\AgencyPack\Blog\ViewHelpers\Link\Be;
 
+use Psr\Http\Message\ServerRequestInterface;
 use T3G\AgencyPack\Blog\Domain\Model\Post;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Core\Routing\Route;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
@@ -28,7 +30,7 @@ class PostViewHelper extends AbstractTagBasedViewHelper
      * Arguments initialization.
      *
      * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
+     * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
      */
     public function initializeArguments(): void
     {
@@ -64,10 +66,12 @@ class PostViewHelper extends AbstractTagBasedViewHelper
                 break;
         }
 
+        $request = $this->getRequest();
+        /** @var Route $route */
+        $route = $request->getAttribute('route');
         $arguments = GeneralUtility::_GET();
-        $route = $arguments['route'];
         unset($arguments['route'], $arguments['token']);
-        $uri .= '&returnUrl=' . rawurlencode((string)GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoutePath($route, $arguments));
+        $uri .= '&returnUrl=' . rawurlencode((string)GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute($route->getOption('_identifier'), $arguments));
 
         if ($uri !== '') {
             if ($this->arguments['returnUri']) {
@@ -83,5 +87,10 @@ class PostViewHelper extends AbstractTagBasedViewHelper
         }
 
         return $result;
+    }
+
+    protected function getRequest(): ?ServerRequestInterface
+    {
+        return $GLOBALS['TYPO3_REQUEST'];
     }
 }

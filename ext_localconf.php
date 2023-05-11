@@ -24,10 +24,11 @@ $blogConfiguration = $extensionConfiguration->get('blog');
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['blogvh'][] = 'T3G\\AgencyPack\\Blog\\ViewHelpers';
 
 // Register page layout hooks to display additional information for posts.
-if (!(bool)$blogConfiguration['disablePageLayoutHeader']) {
+if (
+    !(bool)$blogConfiguration['disablePageLayoutHeader'] &&
+    (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Information\Typo3Version::class))->getMajorVersion() < 12
+) {
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['cms/layout/db_layout.php']['drawHeaderHook'][]
-        = \T3G\AgencyPack\Blog\Hooks\PageLayoutHeaderHook::class . '->drawHeader';
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['recordlist/Modules/Recordlist/index.php']['drawHeaderHook'][]
         = \T3G\AgencyPack\Blog\Hooks\PageLayoutHeaderHook::class . '->drawHeader';
 }
 
@@ -146,14 +147,6 @@ call_user_func(
 
         \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
             'Blog',
-            'Metadata',
-            [
-                \T3G\AgencyPack\Blog\Controller\PostController::class => 'metadata',
-            ]
-        );
-
-        \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-            'Blog',
             'Authors',
             [
                 \T3G\AgencyPack\Blog\Controller\PostController::class => 'authors',
@@ -215,14 +208,6 @@ call_user_func(
             [
                 \T3G\AgencyPack\Blog\Controller\WidgetController::class => 'feed',
             ]
-        );
-
-        $dispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(TYPO3\CMS\Extbase\SignalSlot\Dispatcher::class);
-        $dispatcher->connect(
-            \TYPO3\CMS\Extensionmanager\Utility\InstallUtility::class,
-            'afterExtensionInstall',
-            \T3G\AgencyPack\Blog\Hooks\ExtensionUpdate::class,
-            'afterExtensionInstall'
         );
 
         /** @noinspection UnsupportedStringOffsetOperationsInspection */

@@ -244,7 +244,6 @@ return [
             'label' => $ll . 'tx_blog_domain_model_author.details_page',
             'config' => [
                 'type' => 'group',
-                'internal_type' => 'db',
                 'allowed' => 'pages',
                 'size' => 1,
                 'maxitems' => 1,
@@ -255,17 +254,10 @@ return [
         ]
     ],
     'sys_language_uid' => [
+        'exclude' => true,
         'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.language',
         'config' => [
-            'type' => 'select',
-            'default' => 0,
-            'renderType' => 'selectSingle',
-            'foreign_table' => 'sys_language',
-            'foreign_table_where' => 'ORDER BY sys_language.title',
-            'items' => [
-                ['LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.allLanguages', -1],
-                ['LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.default_value', 0],
-            ],
+            'type' => 'language',
         ],
     ],
     'l18n_parent' => [

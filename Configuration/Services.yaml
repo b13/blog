@@ -6,3 +6,27 @@ services:
 
     T3G\AgencyPack\Blog\:
         resource: '../Classes/*'
+
+    T3G\AgencyPack\Blog\Domain\Factory\CommentFormFactory:
+        public: true
+    T3G\AgencyPack\Blog\Notification\Processor:
+        public: true
+    T3G\AgencyPack\Blog\Hooks\PageLayoutHeaderHook:
+        public: true
+
+    T3G\AgencyPack\Blog\Listener\RenderAdditionalContentToRecordList:
+        tags:
+            - name: event.listener
+              identifier: 't3g/blog/render-additional-content-to-record-list'
+    T3G\AgencyPack\Blog\Listener\RenderAdditionalContentToRecordListV11:
+        tags:
+            - name: event.listener
+              identifier: 't3g/blog/render-additional-content-to-record-list-v11'
+    T3G\AgencyPack\Blog\Listener\ModifyPageLayoutContent:
+        tags:
+            - name: event.listener
+              identifier: 't3g/blog/modify-page-module-content'
+    T3G\AgencyPack\Blog\Listener\AfterPackageActivation:
+        tags:
+            - name: event.listener
+              identifier: 't3g/blog/after-package-activation'
