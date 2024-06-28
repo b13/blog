@@ -195,6 +195,7 @@ $GLOBALS['TCA']['pages']['columns'] = array_replace_recursive(
         'featured_image' => [
             'label' => $ll . 'pages.featured_image',
             'config' => [
+                'type' => 'file',
                 'minitems' => 0,
                 'maxitems' => 1,
                 'behaviour' => [
