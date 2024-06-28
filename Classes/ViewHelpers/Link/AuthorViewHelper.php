@@ -11,6 +11,7 @@ declare(strict_types = 1);
 namespace T3G\AgencyPack\Blog\ViewHelpers\Link;
 
 use T3G\AgencyPack\Blog\Domain\Model\Author;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -56,7 +57,9 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
 
     protected function buildUriFromDefaultPage(Author $author, bool $rssFormat): string
     {
-        $uriBuilder = $this->getUriBuilder((int)$this->getTypoScriptFrontendController()->tmpl->setup['plugin.']['tx_blog.']['settings.']['authorUid'], [], $rssFormat);
+        /** @var FrontendTypoScript $typoscriptAttribute */
+        $typoscriptAttribute = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript');
+        $uriBuilder = $this->getUriBuilder((int)$typoscriptAttribute->getSetupArray()['plugin.']['tx_blog.']['settings.']['authorUid'], [], $rssFormat);
         $arguments = [
             'author' => $author->getUid(),
         ];
@@ -71,8 +74,10 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
             ->setTargetPageUid($pageUid)
             ->setArguments($additionalParams);
         if ($rssFormat) {
+            /** @var FrontendTypoScript $typoscriptAttribute */
+            $typoscriptAttribute = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript');
             $uriBuilder
-                ->setTargetPageType((int)$this->getTypoScriptFrontendController()->tmpl->setup['blog_rss_author.']['typeNum']);
+                ->setTargetPageType((int)$typoscriptAttribute->getSetupArray()['blog_rss_author.']['typeNum']);
         }
 
         return $uriBuilder;

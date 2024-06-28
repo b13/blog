@@ -11,6 +11,7 @@ declare(strict_types = 1);
 namespace T3G\AgencyPack\Blog\ViewHelpers\Link;
 
 use T3G\AgencyPack\Blog\Domain\Model\Tag;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -40,7 +41,9 @@ class TagViewHelper extends AbstractTagBasedViewHelper
         $rssFormat = (bool)$this->arguments['rss'];
         /** @var Tag $tag */
         $tag = $this->arguments['tag'];
-        $pageUid = (int)$this->getTypoScriptFrontendController()->tmpl->setup['plugin.']['tx_blog.']['settings.']['tagUid'];
+        /** @var FrontendTypoScript $typoscriptAttribute */
+        $typoscriptAttribute = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript');
+        $pageUid = (int)$typoscriptAttribute->getSetupArray()['plugin.']['tx_blog.']['settings.']['tagUid'];
         $arguments = [
             'tag' => $tag->getUid(),
         ];
@@ -49,8 +52,10 @@ class TagViewHelper extends AbstractTagBasedViewHelper
             ->setRequest($this->renderingContext->getRequest())
             ->setTargetPageUid($pageUid);
         if ($rssFormat) {
+            /** @var FrontendTypoScript $typoscriptAttribute */
+            $typoscriptAttribute = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript');
             $uriBuilder
-                ->setTargetPageType((int)$this->getTypoScriptFrontendController()->tmpl->setup['blog_rss_tag.']['typeNum']);
+                ->setTargetPageType((int)$typoscriptAttribute->getSetupArray()['blog_rss_tag.']['typeNum']);
         }
         $uri = $uriBuilder->uriFor('listPostsByTag', $arguments, 'Post', 'Blog', 'Tag');
         if ($uri !== '') {
