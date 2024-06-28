@@ -11,6 +11,7 @@ declare(strict_types = 1);
 namespace T3G\AgencyPack\Blog\Domain\Validator;
 
 use TYPO3\CMS\Core\Http\RequestFactory;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Validation\Validator\AbstractValidator;
@@ -21,11 +22,13 @@ class GoogleCaptchaValidator extends AbstractValidator
 
     public function isValid($value): void
     {
+        $request = $GLOBALS['TYPO3_REQUEST'];
         $action = 'form';
         $controller = 'Comment';
         $settings = GeneralUtility::makeInstance(ConfigurationManagerInterface::class)
             ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
-        $requestData = GeneralUtility::_GPmerged('tx_blog_commentform');
+        $requestData = $request->getQueryParams()['tx_blog_commentform'];
+        ArrayUtility::mergeRecursiveWithOverrule($requestData, $request->getParsedBody()['tx_blog_commentform']);
 
         if (
             // this validator is called multiple times, if the first success,
@@ -41,7 +44,7 @@ class GoogleCaptchaValidator extends AbstractValidator
                 'headers' => ['Content-type' => 'application/x-www-form-urlencoded'],
                 'query' => [
                     'secret' => $settings['comments']['google_recaptcha']['secret_key'],
-                    'response' => GeneralUtility::_GP('g-recaptcha-response'),
+                    'response' => $request->getParsedBody()['g-recaptcha-response'] ?? $request->getQueryParams()['g-recaptcha-response'] ?? null,
                     'remoteip' => GeneralUtility::getIndpEnv('REMOTE_ADDR')
                 ]
             ];

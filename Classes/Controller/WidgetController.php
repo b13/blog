@@ -44,7 +44,7 @@ class WidgetController extends ActionController
 
     public function categoriesAction(): ResponseInterface
     {
-        $requestParameters = GeneralUtility::_GP('tx_blog_category');
+        $requestParameters = $this->request->getParsedBody()['tx_blog_category'] ?? $this->request->getQueryParams()['tx_blog_category'] ?? null;
         $currentCategory = 0;
         if (($requestParameters['category'] ?? null) !== null) {
             $currentCategory = (int)$requestParameters['category'];
@@ -60,7 +60,8 @@ class WidgetController extends ActionController
 
     public function tagsAction(): ResponseInterface
     {
-        $requestParameters = GeneralUtility::_GP('tx_blog_tag');
+        $requestParameters = $this->request->getParsedBody()['tx_blog_tag'] ?? $this->request->getQueryParams()['tx_blog_tag'] ?? null;
+
         $currentTag = 0;
         if (($requestParameters['tag'] ?? null) !== null) {
             $currentTag = (int)$requestParameters['tag'];
