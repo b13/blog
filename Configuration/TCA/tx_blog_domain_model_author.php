@@ -20,7 +20,6 @@ return [
         'label_alt_force' => 0,
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
-        'cruser_id' => 'cruser_id',
         'default_sortby' => 'ORDER BY title',
         'delete' => 'deleted',
         'enablecolumns' => [
@@ -76,7 +75,7 @@ return [
             'config' => [
                 'type' => 'input',
                 'size' => 30,
-                'eval' => 'required',
+                'required' => true,
             ],
             'l10n_display' => 'defaultAsReadonly',
             'l10n_mode' => 'exclude',
@@ -105,9 +104,9 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'items' => [
-                    ['Please choose one avatar provider', '--div--'],
-                    ['Gravatar', \T3G\AgencyPack\Blog\AvatarProvider\GravatarProvider::class],
-                    ['Image', \T3G\AgencyPack\Blog\AvatarProvider\ImageProvider::class],
+                    ['label' => 'Please choose one avatar provider', 'value' => '--div--'],
+                    ['label' => 'Gravatar', 'value' => \T3G\AgencyPack\Blog\AvatarProvider\GravatarProvider::class],
+                    ['label' => 'Image', 'value' => \T3G\AgencyPack\Blog\AvatarProvider\ImageProvider::class],
                 ],
             ],
             'l10n_mode' => 'exclude',
@@ -156,9 +155,8 @@ return [
         'email' => [
             'label' => $ll . 'tx_blog_domain_model_author.email',
             'config' => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'required,email',
+                'type' => 'email',
+                'required' => true,
             ],
             'l10n_mode' => 'exclude',
         ],
@@ -264,7 +262,7 @@ return [
             'type' => 'select',
             'renderType' => 'selectSingle',
             'items' => [
-                ['', 0],
+                ['label' => '', 'value' => 0],
             ],
             'foreign_table' => 'tx_blog_domain_model_author',
             'foreign_table_where' => 'AND tx_blog_domain_model_author.pid=###CURRENT_PID### AND tx_blog_domain_model_author.sys_language_uid IN (-1,0)',
