@@ -10,6 +10,7 @@ declare(strict_types = 1);
 
 namespace T3G\AgencyPack\Blog\Service;
 
+use Doctrine\DBAL\ParameterType;
 use T3G\AgencyPack\Blog\Constants;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -28,7 +29,7 @@ class SetupService
             ->select('pid')
             ->addSelectLiteral($queryBuilder->expr()->count('pid', 'cnt'))
             ->from('pages')
-            ->where($queryBuilder->expr()->eq('doktype', $queryBuilder->createNamedParameter(Constants::DOKTYPE_BLOG_POST, \PDO::PARAM_INT)))
+            ->where($queryBuilder->expr()->eq('doktype', $queryBuilder->createNamedParameter(Constants::DOKTYPE_BLOG_POST, ParameterType::INTEGER)))
             ->groupBy('pid')
             ->executeQuery()
             ->fetchAllAssociative();
@@ -39,7 +40,7 @@ class SetupService
                 $title = $queryBuilder
                     ->select('title')
                     ->from('pages')
-                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogUid, \PDO::PARAM_INT)))
+                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogUid, ParameterType::INTEGER)))
                     ->executeQuery()
                     ->fetchOne();
                 $rootline = array_reverse(GeneralUtility::makeInstance(RootlineUtility::class, $blogUid)->get());
@@ -84,12 +85,12 @@ class SetupService
                 $record = $queryBuilder
                     ->select('TSconfig')
                     ->from('pages')
-                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogRootUid, \PDO::PARAM_INT)))
+                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogRootUid, ParameterType::INTEGER)))
                     ->executeQuery()
                     ->fetchAssociative();
                 $queryBuilder->update('pages')
                     ->set('TSconfig', str_replace('NEW_blogFolder', (string)$blogFolderUid, $record['TSconfig'] ?? ''))
-                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogRootUid, \PDO::PARAM_INT)))
+                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogRootUid, ParameterType::INTEGER)))
                     ->executeStatement();
 
                 $blogSetupRelations = GeneralUtility::getFileAbsFileName('EXT:blog/Configuration/DataHandler/BlogSetupRelations.php');
@@ -112,7 +113,7 @@ class SetupService
                 $record = $queryBuilder
                     ->select('constants')
                     ->from('sys_template')
-                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($sysTemplateUid, \PDO::PARAM_INT)))
+                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($sysTemplateUid, ParameterType::INTEGER)))
                     ->executeQuery()
                     ->fetchAssociative();
                 $queryBuilder
@@ -122,7 +123,7 @@ class SetupService
                         $recordUidArray,
                         $record['constants'] ?? ''
                     ))
-                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($sysTemplateUid, \PDO::PARAM_INT)))
+                    ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($sysTemplateUid, ParameterType::INTEGER)))
                     ->executeStatement();
             }
         }
